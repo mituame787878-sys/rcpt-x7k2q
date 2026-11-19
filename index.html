@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>領収書ため</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f5f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="領収書ため">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{
+  --z:1;--zbar:calc(46px + env(safe-area-inset-bottom));
+  --fam:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  --fs:16px;--lh:1.5;--ls:0em;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--fam);font-size:var(--fs);line-height:var(--lh);letter-spacing:var(--ls);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;letter-spacing:inherit;color:inherit}
+#app{zoom:var(--z);height:calc((100dvh - var(--zbar)) / var(--z));display:flex;flex-direction:column;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+header{padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+header .ttl{font-weight:700;flex:1;min-width:0}
+header .stat{font-size:.78em;color:var(--muted);display:block;font-weight:400}
+.ib{border:1px solid var(--border);background:var(--btn);color:var(--btnText);border-radius:10px;min-width:40px;height:40px;padding:0 10px;cursor:pointer}
+main{flex:1;min-height:0;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
+nav{display:flex;background:var(--panel);border-top:1px solid var(--border)}
+nav button{flex:1;border:0;background:none;padding:10px 4px 8px;color:var(--muted);cursor:pointer;font-size:.9em}
+nav button b{display:block;font-size:1.4em;font-weight:400}
+nav button.on{color:var(--accent);font-weight:700}
+.btn{border:1px solid var(--border);background:var(--btn);color:var(--btnText);border-radius:12px;padding:10px 14px;cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--accentText);border-color:var(--accent);font-weight:700}
+.btn.dng{color:var(--danger);border-color:var(--danger)}
+.btn:disabled{opacity:.45}
+@media (hover:hover){.btn:hover,.ib:hover{background:var(--btnHover)}.btn.pri:hover{filter:brightness(1.1);background:var(--accent)}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 2px 8px color-mix(in srgb,var(--shadow) 18%,transparent)}
+.cam{width:100%;padding:34px 10px;font-size:1.3em;border-radius:18px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{width:100%;background:var(--input);color:var(--inputText);border:1px solid var(--border);border-radius:10px;padding:9px 10px;font-size:16px}
+label.f{display:block;margin:10px 0 4px;font-size:.85em;color:var(--muted)}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;text-align:center}
+.seg input{display:none}
+.seg span{display:block;padding:9px 4px;border:1px solid var(--border);border-radius:10px;background:var(--btn);color:var(--btnText);cursor:pointer}
+.seg input:checked+span{background:var(--accent);color:var(--accentText);border-color:var(--accent);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.th{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--input);cursor:pointer;padding:0}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th .bd{position:absolute;left:4px;top:4px;font-size:.7em;padding:1px 6px;border-radius:8px;color:var(--badgeText)}
+.th .am{position:absolute;left:0;right:0;bottom:0;font-size:.75em;padding:2px 6px;background:color-mix(in srgb,var(--shadow) 60%,transparent);color:#fff;text-align:right}
+.th .ok{position:absolute;right:4px;top:4px;font-size:.75em;background:var(--accent);color:var(--accentText);border-radius:8px;padding:0 5px}
+.c-med{background:var(--catMed)}.c-exp{background:var(--catExp)}.c-oth{background:var(--catOther)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{border:1px solid var(--border);background:var(--btn);color:var(--btnText);border-radius:16px;padding:4px 12px;font-size:.85em;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+.sum{display:flex;gap:8px;flex-wrap:wrap;font-size:.85em;color:var(--muted);margin-bottom:10px}
+.sum b{color:var(--text)}
+.muted{color:var(--muted);font-size:.88em}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+.back{position:fixed;left:0;right:0;top:0;bottom:var(--zbar);background:color-mix(in srgb,var(--overlay) 50%,transparent);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.back.show{display:flex}
+.back.mid{align-items:center}
+.sheet{zoom:var(--z);width:100%;max-width:560px;max-height:calc((100dvh - var(--zbar) - 12px) / var(--z));overflow:auto;background:var(--panel);color:var(--text);border-radius:18px 18px 0 0;padding:14px;border:1px solid var(--border);box-shadow:0 -4px 20px color-mix(in srgb,var(--shadow) 30%,transparent)}
+.back.mid .sheet{border-radius:16px;margin:0 12px;width:auto}
+.sheet h3{margin:0 0 8px}
+.pv{width:100%;max-height:34vh;object-fit:contain;background:var(--input);border-radius:10px;display:block}
+.pv.big{max-height:none}
+#zbar{position:fixed;left:0;right:0;bottom:0;height:var(--zbar);padding:0 12px env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;z-index:30;font-size:14px}
+#zbar input[type=range]{flex:1;min-width:0}
+#zbar .ib{height:32px;min-width:36px;padding:0}
+#zbar span{min-width:44px;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(var(--zbar) + 14px);transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:20px;z-index:40;display:none;font-size:14px;max-width:90%}
+.cg{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center}
+.cg input[type=color]{width:46px;height:30px;padding:0;border:1px solid var(--border);border-radius:6px;background:none}
+input[type=range]{accent-color:var(--accent)}
+.sc{display:grid;grid-template-columns:5.5em 1fr 3.5em;gap:8px;align-items:center;margin:6px 0}
+hr{border:0;border-top:1px solid var(--border);margin:12px 0}
+.prog{height:8px;background:var(--btn);border-radius:6px;overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;background:var(--accent);width:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="ttl">🧾 領収書ため<span class="stat" id="stat"></span></div>
+    <button class="ib" id="modeBtn" title="ダーク/ライト切替">🌙</button>
+    <button class="ib" id="updBtn" title="更新">🔄</button>
+    <button class="ib" id="setBtn" title="設定">⚙️</button>
+  </header>
+  <main>
+    <section id="v-cam">
+      <div class="card">
+        <button class="btn pri cam" id="camBtn">📷 撮影する</button>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="albumBtn">🖼 アルバムから追加（複数OK）</button>
+        </div>
+        <p class="muted" style="margin:10px 0 0">まとめて撮ってから書き出すのがおすすめ。撮影後に区分・日付・金額・メモを入れられます（空でもOK）。</p>
+      </div>
+      <div class="card" id="recent"></div>
+    </section>
+    <section id="v-list" hidden>
+      <div class="chips" id="fCat"></div>
+      <div class="chips" id="fExp"></div>
+      <div class="sum" id="sum"></div>
+      <div class="grid" id="grid"></div>
+    </section>
+    <section id="v-exp" hidden>
+      <div class="card">
+        <h3 style="margin:0 0 6px">📦 ZIPで書き出す</h3>
+        <label class="f">対象</label>
+        <div class="seg" id="xScope">
+          <label><input type="radio" name="xs" value="new" checked><span>未書き出しのみ</span></label>
+          <label><input type="radio" name="xs" value="all"><span>すべて</span></label>
+        </div>
+        <label class="f">区分</label>
+        <div class="row" id="xCats"></div>
+        <label class="f">期間（空欄なら全期間）</label>
+        <div class="row"><input type="date" id="xFrom"><input type="date" id="xTo"></div>
+        <p id="xCount" style="margin:12px 0 8px"></p>
+        <button class="btn pri" style="width:100%" id="xMake">ZIPを作る</button>
+        <div class="prog" id="xProg" hidden><i></i></div>
+        <div id="xReady" hidden style="margin-top:12px">
+          <p id="xInfo" class="muted" style="margin:0 0 8px"></p>
+          <button class="btn pri" style="width:100%" id="xShare">📤 保存・共有する</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px">🗑 書き出し済みの整理</h3>
+        <p class="muted" style="margin:0 0 8px" id="xDoneInfo"></p>
+        <button class="btn dng" style="width:100%" id="xDelDone">書き出し済みをまとめて削除</button>
+      </div>
+      <p class="muted">ZIPの中身：images/（写真）・receipts.csv（一覧表）・README.txt（AIへの依頼文つき）</p>
+    </section>
+  </main>
+  <nav id="tabs">
+    <button data-v="cam" class="on"><b>📷</b>撮影</button>
+    <button data-v="list"><b>🗂</b>一覧</button>
+    <button data-v="exp"><b>📦</b>書き出し</button>
+  </nav>
+</div>
+
+<div id="zbar">
+  <span>🔍</span>
+  <button class="ib" id="zMinus">－</button>
+  <input type="range" id="zRange" min="50" max="200" step="10" value="100" aria-label="拡大縮小">
+  <button class="ib" id="zPlus">＋</button>
+  <span id="zLabel">100%</span>
+</div>
+
+<div class="back" id="sheetBack"><div class="sheet" id="sheet"></div></div>
+<div class="back mid" id="modalBack"><div class="sheet" id="modal"></div></div>
+<div class="back" id="setBack"><div class="sheet" id="setPanel"></div></div>
+<div id="toast"></div>
+<input type="file" id="camIn" accept="image/*" capture="environment" hidden>
+<input type="file" id="albIn" accept="image/*" multiple hidden>
+
+<script src="jszip.min.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const CATS=['医療費','経費','その他'], CCLS={'医療費':'c-med','経費':'c-exp','その他':'c-oth'};
+const pad=(n,l=2)=>String(n).padStart(l,'0');
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const yen=n=>n==null||n===''?'—':'¥'+Number(n).toLocaleString('ja-JP');
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2200)}
+
+/* ---------- IndexedDB ---------- */
+const DB=(()=>{let p;
+  const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('ryoshu',1);r.onupgradeneeded=()=>r.result.createObjectStore('receipts',{keyPath:'id',autoIncrement:true});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const tx=async(mode,fn)=>{const db=await open();return new Promise((res,rej)=>{const t=db.transaction('receipts',mode);const rq=fn(t.objectStore('receipts'));t.oncomplete=()=>res(rq&&rq.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})};
+  return{all:()=>tx('readonly',s=>s.getAll()),add:o=>tx('readwrite',s=>s.add(o)),put:o=>tx('readwrite',s=>s.put(o)),del:id=>tx('readwrite',s=>s.delete(id)),clear:()=>tx('readwrite',s=>s.clear())};
+})();
+let items=[];
+async function reload(){try{items=(await DB.all()).sort((a,b)=>b.createdAt-a.createdAt)}catch(e){items=[];toast('保存領域を開けませんでした')}renderAll()}
+
+/* ---------- テーマ ---------- */
+const COLORS=[
+ ['bg','背景','#f5f5f7','#121214'],['panel','パネル背景','#ffffff','#1e1e22'],['text','文字','#1d1d1f','#f2f2f4'],['muted','補助文字','#6e6e73','#9a9aa2'],
+ ['border','枠線','#d8d8de','#33333a'],['accent','アクセント','#2f6fed','#6ea0ff'],['accentText','アクセント上の文字','#ffffff','#0b1220'],
+ ['btn','ボタン背景','#e8e8ee','#2a2a30'],['btnText','ボタン文字','#1d1d1f','#f2f2f4'],['btnHover','ボタンホバー','#dcdce4','#383840'],
+ ['input','入力欄背景','#ffffff','#17171a'],['inputText','入力欄文字','#1d1d1f','#f2f2f4'],['shadow','影','#000000','#000000'],
+ ['danger','削除・警告','#d93a3a','#ff6b6b'],['overlay','背景の幕','#000000','#000000'],
+ ['catMed','医療費バッジ','#e0457b','#ff7aa8'],['catExp','経費バッジ','#2a9d6f','#4fd1a1'],['catOther','その他バッジ','#8a6d1f','#d9b24c'],['badgeText','バッジ文字','#ffffff','#10131a']
+];
+const FONTS={gothic:['ゴシック系','"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif'],mincho:['明朝系','"Hiragino Mincho ProN","Yu Mincho","MS PMincho",serif'],mono:['等幅','ui-monospace,"SF Mono",Menlo,Consolas,"MS Gothic",monospace'],hand:['手書き風','"Klee","Zen Kurenaido","Yusei Magic","Hiragino Maru Gothic ProN","Comic Sans MS",cursive'],sans:['英字サンセリフ','"Helvetica Neue",Arial,"Segoe UI",sans-serif']};
+let S=Object.assign({mode:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light',over:{light:{},dark:{}},font:'gothic',size:16,lh:1.5,ls:0},LS.get('ryoshu_settings',{}));
+S.over=S.over||{light:{},dark:{}};S.over.light=S.over.light||{};S.over.dark=S.over.dark||{};
+const saveS=()=>LS.set('ryoshu_settings',S);
+const colorOf=(k)=>{const c=COLORS.find(x=>x[0]===k);return S.over[S.mode][k]||c[S.mode==='dark'?3:2]};
+function applyTheme(){
+  const r=document.documentElement.style;
+  COLORS.forEach(c=>r.setProperty('--'+c[0],colorOf(c[0])));
+  r.setProperty('--fam',FONTS[S.font]?FONTS[S.font][1]:FONTS.gothic[1]);
+  r.setProperty('--fs',S.size+'px');r.setProperty('--lh',S.lh);r.setProperty('--ls',S.ls+'em');
+  $('#modeBtn').textContent=S.mode==='dark'?'☀️':'🌙';
+  document.querySelector('meta[name=theme-color]').content=colorOf('panel');
+  document.documentElement.style.colorScheme=S.mode;
+}
+
+/* ---------- 拡大縮小 ---------- */
+let Z=LS.get('ryoshu_zoom',100);
+function applyZoom(v){Z=Math.max(50,Math.min(200,Math.round(v/10)*10));document.documentElement.style.setProperty('--z',Z/100);$('#zRange').value=Z;$('#zLabel').textContent=Z+'%';LS.set('ryoshu_zoom',Z)}
+$('#zMinus').onclick=()=>applyZoom(Z-10);$('#zPlus').onclick=()=>applyZoom(Z+10);$('#zRange').oninput=e=>applyZoom(+e.target.value);
+
+/* ---------- 画像処理 ---------- */
+async function shrink(file,max,q){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+    const sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const w=Math.round(img.naturalWidth*sc),h=Math.round(img.naturalHeight*sc);
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);
+    return await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+  }finally{URL.revokeObjectURL(url)}
+}
+async function prep(file){const [blob,thumb]=await Promise.all([shrink(file,2000,.85),shrink(file,320,.7)]);return{blob,thumb}}
+
+/* ---------- 撮影・取り込み ---------- */
+let lastCat=LS.get('ryoshu_lastcat','医療費');
+$('#camBtn').onclick=()=>$('#camIn').click();
+$('#albumBtn').onclick=()=>$('#albIn').click();
+$('#camIn').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const p=await prep(f);openSheet({blob:p.blob,thumb:p.thumb})}catch(err){toast('画像を読み込めませんでした')}
+};
+$('#albIn').onchange=async e=>{
+  const fs=[...e.target.files];e.target.value='';if(!fs.length)return;
+  let n=0;
+  for(const f of fs){
+    try{const p=await prep(f);await DB.add({createdAt:Date.now()+n,date:today(),category:lastCat,amount:null,memo:'',exported:false,blob:p.blob,thumb:p.thumb});n++;toast(`取り込み中… ${n}/${fs.length}`)}catch(err){}
+  }
+  await reload();toast(`${n}枚を追加しました（区分：${lastCat}）`);
+};
+
+/* ---------- 入力シート（新規・編集） ---------- */
+let sheetUrl=null,cur=null;
+function closeSheet(){$('#sheetBack').classList.remove('show');if(sheetUrl){URL.revokeObjectURL(sheetUrl);sheetUrl=null}cur=null}
+function openSheet(o){
+  cur=o;const it=o.item||{date:today(),category:lastCat,amount:null,memo:'',exported:false};
+  const blob=o.item?o.item.blob:o.blob;sheetUrl=URL.createObjectURL(blob);
+  const isNew=!o.item;
+  $('#sheet').innerHTML=`
+    <h3>${isNew?'📝 この領収書の情報':'✏️ 領収書の編集'}</h3>
+    <img class="pv" id="pv" src="${sheetUrl}" alt="領収書">
+    <label class="f">区分</label>
+    <div class="seg">${CATS.map(c=>`<label><input type="radio" name="cat" value="${c}" ${it.category===c?'checked':''}><span>${c}</span></label>`).join('')}</div>
+    <label class="f">日付</label><input type="date" id="fDate" value="${esc(it.date)}">
+    <label class="f">金額（円・空欄OK）</label><input type="number" inputmode="numeric" id="fAmt" value="${it.amount==null?'':it.amount}" placeholder="例: 3200">
+    <label class="f">メモ（店名・受診者・用途など。空欄OK）</label><textarea id="fMemo" rows="2">${esc(it.memo)}</textarea>
+    <div class="row" style="margin-top:14px">
+      ${isNew?`<button class="btn pri" id="sSave">保存</button><button class="btn pri" id="sNext">保存して次を撮る</button>`
+             :`<button class="btn pri" id="sSave">保存</button><button class="btn" id="sExp">${it.exported?'未書き出しに戻す':'書き出し済みにする'}</button>`}
+    </div>
+    <div class="row" style="margin-top:8px">
+      ${isNew?'':`<button class="btn dng" id="sDel">削除</button>`}<button class="btn" id="sClose">${isNew?'破棄':'閉じる'}</button>
+    </div>`;
+  $('#pv').onclick=()=>$('#pv').classList.toggle('big');
+  $('#sheetBack').classList.add('show');
+  const read=()=>{const a=$('#fAmt').value.trim();return{category:document.querySelector('input[name=cat]:checked').value,date:$('#fDate').value||today(),amount:a===''?null:Math.round(+a),memo:$('#fMemo').value.trim()}};
+  const save=async()=>{
+    const v=read();lastCat=v.category;LS.set('ryoshu_lastcat',lastCat);
+    if(isNew)await DB.add(Object.assign({createdAt:Date.now(),exported:false,blob:o.blob,thumb:o.thumb},v));
+    else await DB.put(Object.assign({},o.item,v));
+  };
+  $('#sSave').onclick=async()=>{await save();closeSheet();await reload();toast('保存しました')};
+  if(isNew)$('#sNext').onclick=()=>{$('#camIn').click();save().then(()=>{closeSheet();reload();toast('保存しました')})};
+  $('#sClose').onclick=()=>{if(isNew){ask('この写真を破棄しますか？',[['破棄する',()=>closeSheet(),'dng'],['戻る']])}else closeSheet()};
+  if(!isNew){
+    $('#sDel').onclick=()=>ask('この領収書を削除しますか？（元に戻せません）',[['削除する',async()=>{await DB.del(o.item.id);closeSheet();await reload();toast('削除しました')},'dng'],['やめる']]);
+    $('#sExp').onclick=async()=>{await DB.put(Object.assign({},o.item,read(),{exported:!o.item.exported}));closeSheet();await reload()};
+  }
+}
+$('#sheetBack').addEventListener('click',e=>{if(e.target.id==='sheetBack'&&cur&&cur.item)closeSheet()});
+
+/* ---------- 確認ダイアログ ---------- */
+function ask(msg,btns){
+  $('#modal').innerHTML=`<p style="margin:4px 0 14px;white-space:pre-line">${esc(msg)}</p><div class="row" style="flex-direction:column">${btns.map((b,i)=>`<button class="btn ${b[2]==='pri'?'pri':''} ${b[2]==='dng'?'dng':''}" data-i="${i}" style="width:100%">${esc(b[0])}</button>`).join('')}</div>`;
+  $('#modalBack').classList.add('show');
+  $$('#modal button').forEach(b=>b.onclick=()=>{$('#modalBack').classList.remove('show');const f=btns[+b.dataset.i][1];if(f)f()});
+}
+
+/* ---------- タブ ---------- */
+let view='cam';
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;view=b.dataset.v;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));['cam','list','exp'].forEach(v=>$('#v-'+v).hidden=v!==view);$('main').scrollTop=0;renderAll()};
+
+/* ---------- 一覧 ---------- */
+let fCat='all',fExp='all',urls=[];
+function renderList(){
+  urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
+  $('#fCat').innerHTML=['all',...CATS].map(c=>`<button class="chip ${fCat===c?'on':''}" data-c="${c}">${c==='all'?'すべて':c}</button>`).join('');
+  $('#fExp').innerHTML=[['all','全部'],['new','未書き出し'],['done','書き出し済み']].map(([k,l])=>`<button class="chip ${fExp===k?'on':''}" data-e="${k}">${l}</button>`).join('');
+  const list=items.filter(i=>(fCat==='all'||i.category===fCat)&&(fExp==='all'||(fExp==='new')===!i.exported));
+  const sumBy=c=>{const a=list.filter(i=>i.category===c);return{n:a.length,s:a.reduce((t,i)=>t+(i.amount||0),0)}};
+  $('#sum').innerHTML=`<span>計 <b>${list.length}</b>枚</span>`+CATS.map(c=>{const x=sumBy(c);return x.n?`<span>${c} <b>${x.n}</b>枚 <b>${yen(x.s)}</b></span>`:''}).join('')+`<span class="muted">（金額は入力済み分のみ）</span>`;
+  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">まだありません</div>';return}
+  $('#grid').innerHTML=list.map(i=>{const u=URL.createObjectURL(i.thumb||i.blob);urls.push(u);
+    return `<button class="th" data-id="${i.id}"><img src="${u}" alt=""><span class="bd ${CCLS[i.category]}">${esc(i.category)}</span>${i.exported?'<span class="ok">済</span>':''}<span class="am">${esc(i.date.slice(5))} ${i.amount!=null?yen(i.amount):''}</span></button>`}).join('');
+}
+$('#fCat').onclick=e=>{const b=e.target.closest('[data-c]');if(b){fCat=b.dataset.c;renderList()}};
+$('#fExp').onclick=e=>{const b=e.target.closest('[data-e]');if(b){fExp=b.dataset.e;renderList()}};
+$('#grid').onclick=e=>{const b=e.target.closest('.th');if(!b)return;const it=items.find(i=>i.id==b.dataset.id);if(it)openSheet({item:it})};
+
+/* ---------- 撮影タブの直近 ---------- */
+function renderRecent(){
+  const n=items.filter(i=>!i.exported).length;
+  $('#recent').innerHTML=`<div class="row" style="justify-content:space-between"><b>未書き出し</b><span>${n}枚</span></div><p class="muted" style="margin:6px 0 0">${items.length?`保存済み合計 ${items.length}枚。一覧タブで確認、書き出しタブでZIPにできます。`:'まだ何も撮っていません。上のボタンから撮影してください。'}</p>`;
+}
+
+/* ---------- ステータス ---------- */
+function renderStat(){
+  const n=items.filter(i=>!i.exported).length,last=LS.get('ryoshu_last_export',null);
+  let t;if(!last)t='まだ書き出していません';else{const d=Math.floor((Date.now()-new Date(last))/86400000);t=d<=0?'最後の書き出し：今日':`最後の書き出しから${d}日`}
+  $('#stat').textContent=`${t} ／ 未書き出し ${n}枚`;
+}
+
+/* ---------- 書き出し ---------- */
+let zipFile=null,zipIds=[];
+function xFilter(){
+  const sc=document.querySelector('input[name=xs]:checked').value,cs=$$('#xCats input:checked').map(x=>x.value),f=$('#xFrom').value,t=$('#xTo').value;
+  return items.filter(i=>(sc==='all'||!i.exported)&&cs.includes(i.category)&&(!f||i.date>=f)&&(!t||i.date<=t)).sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+}
+function renderExport(){
+  if(!$('#xCats').children.length)$('#xCats').innerHTML=CATS.map(c=>`<label style="flex:none;display:flex;gap:4px;align-items:center"><input type="checkbox" value="${c}" checked style="width:20px;height:20px;accent-color:var(--accent)">${c}</label>`).join('');
+  const l=xFilter();$('#xCount').innerHTML=`対象：<b>${l.length}</b>枚（金額入力済みの合計 ${yen(l.reduce((t,i)=>t+(i.amount||0),0))}）`;
+  $('#xMake').disabled=!l.length;
+  const d=items.filter(i=>i.exported).length;$('#xDelDone').disabled=!d;$('#xDoneInfo').textContent=d?`書き出し済みが${d}枚あります。ZIPを保存できたことを確認してから削除してください。`:'書き出し済みの写真はありません。';
+}
+['#xScope','#xCats','#xFrom','#xTo'].forEach(s=>$(s).addEventListener('input',()=>{$('#xReady').hidden=true;zipFile=null;renderExport()}));
+const csvq=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
+$('#xMake').onclick=async()=>{
+  const l=xFilter();if(!l.length)return;
+  const btn=$('#xMake');btn.disabled=true;$('#xProg').hidden=false;const bar=$('#xProg i');bar.style.width='0';$('#xReady').hidden=true;
+  try{
+    const zip=new JSZip(),img=zip.folder('images');
+    const rows=[['ID','日付','区分','金額','メモ','画像ファイル名']];
+    l.forEach(i=>{const nm=`${pad(i.id,4)}_${i.date}_${i.category}.jpg`;img.file(nm,i.blob);rows.push([pad(i.id,4),i.date,i.category,i.amount??'',i.memo,'images/'+nm])});
+    zip.file('receipts.csv','﻿'+rows.map(r=>r.map(csvq).join(',')).join('\r\n'));
+    zip.file('README.txt',readme(l));
+    const blob=await zip.generateAsync({type:'blob',compression:'STORE'},m=>bar.style.width=m.percent.toFixed(0)+'%');
+    const d=new Date();zipFile=new File([blob],`receipts_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.zip`,{type:'application/zip'});
+    zipIds=l.map(i=>i.id);
+    $('#xInfo').textContent=`${zipFile.name}（${l.length}枚・${(blob.size/1048576).toFixed(1)}MB）できました。下のボタンで「ファイルに保存」などを選んでください。`;
+    $('#xReady').hidden=false;
+  }catch(e){toast('ZIPを作れませんでした')}
+  $('#xProg').hidden=true;btn.disabled=false;
+};
+function readme(l){
+  const cnt=CATS.map(c=>`${c}: ${l.filter(i=>i.category===c).length}枚`).join(' / ');
+  return `領収書ZIP（${new Date().toLocaleString('ja-JP')} 作成 / ${l.length}枚 / ${cnt}）
+
+【中身】
+- receipts.csv … 一覧表（ID・日付・区分・金額・メモ・画像ファイル名）。金額やメモが空欄のものは画像から読み取ってください。
+- images/ … 領収書の写真（ファイル名は「ID_日付_区分.jpg」）
+
+【AIへの依頼文（コピーして使えます）】
+添付のreceipts.csvとimages内の領収書画像を読み取ってください。
+1. 各領収書の「日付・店名/医療機関名・金額・内容」を画像から確認し、CSVの空欄を補完してください。
+2. 区分（医療費／経費／その他）ごとに一覧表と合計金額を作ってください。
+3. 医療費は、医療費控除の明細書に使いやすい形（受診者名・医療機関名・金額）でまとめてください。
+4. 読み取りに自信がないもの、金額が食い違うものは、最後に一覧で教えてください。
+`;
+}
+$('#xShare').onclick=async()=>{
+  if(!zipFile)return;
+  let ok=false;
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[zipFile]})){await navigator.share({files:[zipFile]});ok=true}
+    else{const u=URL.createObjectURL(zipFile),a=document.createElement('a');a.href=u;a.download=zipFile.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000);ok=true}
+  }catch(e){if(e.name==='AbortError')return;toast('保存できませんでした');return}
+  if(ok)afterExport();
+};
+function afterExport(){
+  const ids=zipIds.slice();
+  const mark=async del=>{
+    for(const id of ids){const it=items.find(i=>i.id===id);if(!it)continue;if(del)await DB.del(id);else await DB.put(Object.assign({},it,{exported:true}))}
+    LS.set('ryoshu_last_export',new Date().toISOString());$('#xReady').hidden=true;zipFile=null;await reload();toast(del?'書き出して削除しました':'書き出し済みにしました');
+  };
+  ask('ZIPは保存できましたか？\n（ファイルアプリなどで確認してから選んでください）',[
+    ['保存できた：書き出し済みにして写真を削除',()=>mark(true),'pri'],
+    ['保存できた：書き出し済みにするだけ（写真は残す）',()=>mark(false)],
+    ['まだ／うまくいかなかった']]);
+}
+$('#xDelDone').onclick=()=>{const d=items.filter(i=>i.exported);ask(`書き出し済みの${d.length}枚を削除します。\nZIPを保存できていることを確認しましたか？（元に戻せません）`,[['削除する',async()=>{for(const i of d)await DB.del(i.id);await reload();toast('削除しました')},'dng'],['やめる']])};
+
+/* ---------- 設定パネル ---------- */
+function openSettings(){renderSettings();$('#setBack').classList.add('show')}
+function renderSettings(){
+  $('#setPanel').innerHTML=`
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0;flex:none">⚙️ 設定（自動保存）</h3><button class="btn" id="setClose" style="flex:none">閉じる</button></div>
+    <div class="row"><button class="btn" id="sLight">☀️ ライト</button><button class="btn" id="sDark">🌙 ダーク</button></div>
+    <p class="muted" style="margin:6px 0">現在：${S.mode==='dark'?'ダーク':'ライト'}モードのプリセット＋個別変更</p>
+    <div class="cg">${COLORS.map(c=>`<label for="c_${c[0]}">${c[1]}</label><input type="color" id="c_${c[0]}" data-k="${c[0]}" value="${colorOf(c[0])}">`).join('')}</div>
+    <button class="btn" id="cReset" style="width:100%;margin-top:10px">このモードの色をプリセットに戻す</button>
+    <hr>
+    <label class="f">フォント</label>
+    <select id="sFont">${Object.entries(FONTS).map(([k,v])=>`<option value="${k}" ${S.font===k?'selected':''}>${v[0]}</option>`).join('')}</select>
+    <div class="sc"><span>サイズ</span><input type="range" id="sSize" min="12" max="26" step="1" value="${S.size}"><output id="oSize">${S.size}px</output></div>
+    <div class="sc"><span>行間</span><input type="range" id="sLh" min="1.1" max="2.4" step="0.05" value="${S.lh}"><output id="oLh">${S.lh}</output></div>
+    <div class="sc"><span>文字間隔</span><input type="range" id="sLs" min="-0.05" max="0.3" step="0.01" value="${S.ls}"><output id="oLs">${S.ls}em</output></div>
+    <hr>
+    <p class="muted" style="margin:0 0 6px">容量の確認：<span id="quota">…</span></p>
+    <button class="btn dng" id="allDel" style="width:100%">すべての写真とデータを削除</button>`;
+  const setMode=m=>{S.mode=m;saveS();applyTheme();renderSettings()};
+  $('#sLight').onclick=()=>setMode('light');$('#sDark').onclick=()=>setMode('dark');
+  $$('#setPanel input[type=color]').forEach(i=>i.oninput=()=>{S.over[S.mode][i.dataset.k]=i.value;saveS();applyTheme()});
+  $('#cReset').onclick=()=>{S.over[S.mode]={};saveS();applyTheme();renderSettings()};
+  $('#sFont').onchange=e=>{S.font=e.target.value;saveS();applyTheme()};
+  $('#sSize').oninput=e=>{S.size=+e.target.value;$('#oSize').textContent=S.size+'px';saveS();applyTheme()};
+  $('#sLh').oninput=e=>{S.lh=+e.target.value;$('#oLh').textContent=S.lh;saveS();applyTheme()};
+  $('#sLs').oninput=e=>{S.ls=+e.target.value;$('#oLs').textContent=S.ls+'em';saveS();applyTheme()};
+  $('#setClose').onclick=()=>$('#setBack').classList.remove('show');
+  $('#allDel').onclick=()=>ask('すべての写真とデータを削除します。元に戻せません。よろしいですか？',[['すべて削除する',async()=>{await DB.clear();await reload();toast('削除しました')},'dng'],['やめる']]);
+  if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(e=>{const q=$('#quota');if(q)q.textContent=`${(e.usage/1048576).toFixed(1)}MB 使用中`});else $('#quota').textContent='取得できません';
+}
+$('#setBtn').onclick=openSettings;
+$('#setBack').addEventListener('click',e=>{if(e.target.id==='setBack')$('#setBack').classList.remove('show')});
+$('#modeBtn').onclick=()=>{S.mode=S.mode==='dark'?'light':'dark';saveS();applyTheme()};
+
+/* ---------- 更新ボタン ---------- */
+$('#updBtn').onclick=async()=>{
+  toast('更新しています…');
+  try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){}
+  location.reload();
+};
+
+function renderAll(){renderStat();renderRecent();if(view==='list')renderList();if(view==='exp')renderExport()}
+
+/* ---------- 起動 ---------- */
+applyTheme();applyZoom(Z);reload();
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
